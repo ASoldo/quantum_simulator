@@ -33,3 +33,27 @@ pub fn pauli_x() -> Gate {
         [Complex::new(1.0, 0.0), Complex::new(0.0, 0.0)],
     ])
 }
+
+pub fn pauli_y() -> Gate {
+    Gate::new([
+        [Complex::new(0.0, 0.0), Complex::new(0.0, -1.0)],
+        [Complex::new(0.0, 1.0), Complex::new(0.0, 0.0)],
+    ])
+}
+
+pub fn pauli_z() -> Gate {
+    Gate::new([
+        [Complex::new(1.0, 0.0), Complex::new(0.0, 0.0)],
+        [Complex::new(0.0, 0.0), Complex::new(-1.0, 0.0)],
+    ])
+}
+
+pub fn phase(theta: f64) -> Gate {
+    Gate::new([
+        [Complex::new(1.0, 0.0), Complex::new(0.0, 0.0)],
+        [
+            Complex::new(0.0, 0.0),
+            Complex::new(theta.cos(), theta.sin()),
+        ],
+    ])
+}
