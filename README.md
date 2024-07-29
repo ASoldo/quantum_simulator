@@ -1,4 +1,4 @@
-![image](https://github.com/user-attachments/assets/619f27c6-3fd7-479b-9682-6e18aae95ca1)
+![image](https://github.com/user-attachments/assets/43ce8205-2ad9-4c97-bc6d-dd98da1a8de4)
 
 # Quantum Simulator
 
