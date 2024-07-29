@@ -1,4 +1,4 @@
-use bevy::color::palettes::tailwind::{BLUE_500, GREEN_500, RED_500};
+use bevy::color::palettes::tailwind::{BLUE_500, GREEN_500, RED_500, YELLOW_500};
 use bevy::prelude::*;
 use bevy_panorbit_camera::{PanOrbitCamera, PanOrbitCameraPlugin};
 use num_complex::Complex;
@@ -11,7 +11,7 @@ use quantum_simulator::simulator::Simulator;
 struct QubitSphere;
 
 #[derive(Component)]
-struct Position;
+struct Position(Vec3);
 
 fn main() {
     App::new()
@@ -124,7 +124,7 @@ fn run_quantum_simulation(
                 ..Default::default()
             })
             .insert(QubitSphere)
-            .insert(Position);
+            .insert(Position(Vec3::new(x as f32, y as f32, z as f32)));
     }
 
     println!("Command: Measure");
@@ -178,7 +178,7 @@ fn bloch_sphere_coordinates(theta: f64, phi: f64) -> (f64, f64, f64) {
     (x, y, z)
 }
 
-fn gizmo_draw(mut gizmos: Gizmos) {
+fn gizmo_draw(mut gizmos: Gizmos, query: Query<&Position, With<QubitSphere>>) {
     gizmos
         .grid_3d(
             Vec3::ZERO,
@@ -211,4 +211,9 @@ fn gizmo_draw(mut gizmos: Gizmos) {
     gizmos.arrow(Vec3::ZERO, Vec3::X * 2.0, RED_500);
     gizmos.arrow(Vec3::ZERO, Vec3::Y * 2.0, GREEN_500);
     gizmos.arrow(Vec3::ZERO, Vec3::Z * 2.0, BLUE_500);
+
+    for position in query.iter() {
+        let end_position = position.0 * 1.5; // Overshoot a little
+        gizmos.arrow(Vec3::ZERO, end_position, YELLOW_500);
+    }
 }
