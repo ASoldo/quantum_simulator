@@ -183,7 +183,7 @@ fn gizmo_draw(mut gizmos: Gizmos) {
         .grid_3d(
             Vec3::ZERO,
             Quat::IDENTITY,
-            UVec3::new(4, 0, 4),
+            UVec3::new(2, 0, 2),
             Vec3::splat(1.),
             RED_500,
         )
@@ -192,7 +192,7 @@ fn gizmo_draw(mut gizmos: Gizmos) {
         .grid_3d(
             Vec3::ZERO,
             Quat::from_axis_angle(Vec3::X, std::f32::consts::PI / 2.0),
-            UVec3::new(4, 0, 4),
+            UVec3::new(2, 0, 2),
             Vec3::splat(1.),
             GREEN_500,
         )
@@ -202,13 +202,13 @@ fn gizmo_draw(mut gizmos: Gizmos) {
         .grid_3d(
             Vec3::ZERO,
             Quat::from_axis_angle(Vec3::Z, std::f32::consts::PI / 2.0),
-            UVec3::new(4, 0, 4),
+            UVec3::new(2, 0, 2),
             Vec3::splat(1.),
             BLUE_500,
         )
         .outer_edges();
 
-    gizmos.arrow(Vec3::ZERO, Vec3::X * 3.0, RED_500);
-    gizmos.arrow(Vec3::ZERO, Vec3::Y * 3.0, GREEN_500);
-    gizmos.arrow(Vec3::ZERO, Vec3::Z * 3.0, BLUE_500);
+    gizmos.arrow(Vec3::ZERO, Vec3::X * 2.0, RED_500);
+    gizmos.arrow(Vec3::ZERO, Vec3::Y * 2.0, GREEN_500);
+    gizmos.arrow(Vec3::ZERO, Vec3::Z * 2.0, BLUE_500);
 }
