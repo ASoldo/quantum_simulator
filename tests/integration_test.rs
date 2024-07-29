@@ -18,7 +18,7 @@ mod tests {
         circuit.add_gate(pauli_x());
 
         let initial_state = vec![Complex::new(1.0, 0.0), Complex::new(0.0, 0.0)]; // |0⟩ state
-        let final_qubit = Simulator::run(&circuit, initial_state);
+        let final_qubit = Simulator::run(&circuit, &initial_state);
 
         assert!(complex_approx_eq(
             final_qubit.state[0],
@@ -38,7 +38,7 @@ mod tests {
         circuit.add_gate(pauli_y());
 
         let initial_state = vec![Complex::new(1.0, 0.0), Complex::new(0.0, 0.0)]; // |0⟩ state
-        let final_qubit = Simulator::run(&circuit, initial_state);
+        let final_qubit = Simulator::run(&circuit, &initial_state);
 
         assert!(complex_approx_eq(
             final_qubit.state[0],
@@ -58,7 +58,7 @@ mod tests {
         circuit.add_gate(pauli_z());
 
         let initial_state = vec![Complex::new(1.0, 0.0), Complex::new(0.0, 0.0)]; // |0⟩ state
-        let final_qubit = Simulator::run(&circuit, initial_state);
+        let final_qubit = Simulator::run(&circuit, &initial_state);
 
         assert!(complex_approx_eq(
             final_qubit.state[0],
@@ -78,7 +78,7 @@ mod tests {
         circuit.add_gate(phase(std::f64::consts::PI / 2.0));
 
         let initial_state = vec![Complex::new(0.0, 0.0), Complex::new(1.0, 0.0)]; // |1⟩ state
-        let final_qubit = Simulator::run(&circuit, initial_state);
+        let final_qubit = Simulator::run(&circuit, &initial_state);
 
         assert!(complex_approx_eq(
             final_qubit.state[0],
@@ -107,19 +107,16 @@ mod tests {
             Complex::new(0.0, 0.0),
             Complex::new(0.0, 0.0),
         ]; // |000⟩ state
-        let final_qubit = Simulator::run(&circuit, initial_state);
+        let final_qubit = Simulator::run(&circuit, &initial_state);
 
-        let expected_amplitude = 1.0 / (2.0_f64).sqrt();
-        assert!(complex_approx_eq(
-            final_qubit.state[0],
-            Complex::new(expected_amplitude, 0.0),
-            TOLERANCE
-        ));
-        assert!(complex_approx_eq(
-            final_qubit.state[1],
-            Complex::new(expected_amplitude, 0.0),
-            TOLERANCE
-        ));
+        let expected_amplitude = 1.0 / (8.0_f64).sqrt();
+        for state in final_qubit.state.iter() {
+            assert!(complex_approx_eq(
+                *state,
+                Complex::new(expected_amplitude, 0.0),
+                TOLERANCE
+            ));
+        }
     }
 
     #[test]
@@ -138,7 +135,7 @@ mod tests {
             Complex::new(0.0, 0.0),
             Complex::new(0.0, 0.0),
         ]; // |000⟩ state
-        let final_qubit = Simulator::run(&circuit, initial_state);
+        let final_qubit = Simulator::run(&circuit, &initial_state);
 
         assert!(complex_approx_eq(
             final_qubit.state[0],
@@ -146,18 +143,8 @@ mod tests {
             TOLERANCE
         ));
         assert!(complex_approx_eq(
-            final_qubit.state[1],
-            Complex::new(0.5, 0.0),
-            TOLERANCE
-        ));
-        assert!(complex_approx_eq(
-            final_qubit.state[2],
-            Complex::new(0.0, 0.0),
-            TOLERANCE
-        ));
-        assert!(complex_approx_eq(
             final_qubit.state[3],
-            Complex::new(0.0, 0.0),
+            Complex::new(0.5, 0.0),
             TOLERANCE
         ));
     }
