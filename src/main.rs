@@ -1,78 +1,171 @@
+use bevy::color::palettes::tailwind::{BLUE_500, GREEN_500, RED_500};
+use bevy::prelude::*;
+use bevy_panorbit_camera::{PanOrbitCamera, PanOrbitCameraPlugin};
 use num_complex::Complex;
 use quantum_simulator::circuit::Circuit;
-use quantum_simulator::gates::{hadamard, pauli_x, pauli_y, pauli_z, phase};
+use quantum_simulator::gates::{cnot, hadamard, pauli_x, pauli_y, pauli_z};
 use quantum_simulator::simulator::Simulator;
-use std::io;
+
+// Components
+#[derive(Component)]
+struct QubitSphere;
+
+#[derive(Component)]
+struct Position;
 
 fn main() {
+    App::new()
+        .add_plugins(DefaultPlugins)
+        .add_plugins(PanOrbitCameraPlugin)
+        .add_systems(Startup, setup_camera_and_light)
+        .add_systems(Startup, run_quantum_simulation)
+        .add_systems(Update, gizmo_draw)
+        .run();
+}
+
+fn setup_camera_and_light(mut commands: Commands) {
+    // Setup camera
+    commands.spawn((
+        Camera3dBundle {
+            transform: Transform::from_xyz(0.0, 2.0, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
+            ..Default::default()
+        },
+        PanOrbitCamera::default(),
+    ));
+
+    // Setup light
+    commands.spawn(PointLightBundle {
+        point_light: PointLight {
+            intensity: 5000000.0,
+            ..Default::default()
+        },
+        transform: Transform::from_xyz(0.0, 8.0, 0.0),
+        ..Default::default()
+    });
+}
+
+fn run_quantum_simulation(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+) {
+    let num_qubits: usize = 4;
+
+    // Define the initial state |000>
+    let initial_state: Vec<Complex<f64>> = vec![
+        Complex::new(1.0, 0.0),
+        Complex::new(0.0, 0.0),
+        Complex::new(0.0, 0.0),
+        Complex::new(0.0, 0.0),
+        Complex::new(0.0, 0.0),
+        Complex::new(0.0, 0.0),
+        Complex::new(0.0, 0.0),
+        Complex::new(0.0, 0.0),
+        Complex::new(0.0, 0.0),
+        Complex::new(0.0, 0.0),
+        Complex::new(0.0, 0.0),
+        Complex::new(0.0, 0.0),
+        Complex::new(0.0, 0.0),
+        Complex::new(0.0, 0.0),
+        Complex::new(0.0, 0.0),
+        Complex::new(0.0, 0.0),
+    ];
+
     let mut circuit = Circuit::new();
 
-    println!("Enter initial qubit state (|0⟩, |1⟩, or custom [a, b] where |a|^2 + |b|^2 = 1):");
-    let mut input = String::new();
-    io::stdin().read_line(&mut input).unwrap();
-    let initial_state: Vec<Complex<f64>> = match input.trim() {
-        "|0>" => vec![Complex::new(1.0, 0.0), Complex::new(0.0, 0.0)], // |0⟩
-        "|1>" => vec![Complex::new(0.0, 0.0), Complex::new(1.0, 0.0)], // |1⟩
-        custom => {
-            let values: Vec<f64> = custom
-                .trim_matches(|p| p == '[' || p == ']')
-                .split(',')
-                .map(|s| s.trim().parse().unwrap())
-                .collect();
-            let norm = (values[0].powi(2) + values[1].powi(2)).sqrt();
-            vec![
-                Complex::new(values[0] / norm, 0.0),
-                Complex::new(values[1] / norm, 0.0),
-            ]
-        }
-    };
+    // Apply different gates to each qubit
+    circuit.add_gate(hadamard(1)); // Apply Hadamard to qubit 0
+    circuit.add_gate(cnot(0, 1, num_qubits)); // Apply CNOT with control=0, target=1
+    circuit.add_gate(pauli_x()); // Apply Pauli-X gate to qubit 2
+    circuit.add_gate(cnot(1, 2, num_qubits)); // Apply CNOT with control=1, target=2
+    circuit.add_gate(pauli_y()); // Apply Pauli-Y gate to qubit 3
+    circuit.add_gate(cnot(2, 3, num_qubits)); // Apply CNOT with control=2, target=3
+    circuit.add_gate(pauli_z()); // Apply Pauli-Z gate to all qubits
 
-    loop {
-        println!("Enter gate to add (Hadamard, Pauli-X, Pauli-Y, Pauli-Z, Phase [angle]) or 'Run' to execute:");
-        input.clear();
-        io::stdin().read_line(&mut input).unwrap();
-        let trimmed = input.trim();
-        if trimmed == "Run" {
-            break;
-        } else if trimmed.starts_with("Phase") {
-            let angle: f64 = trimmed.split_whitespace().nth(1).unwrap().parse().unwrap();
-            circuit.add_gate(phase(angle));
-        } else {
-            match trimmed {
-                "Hadamard" => circuit.add_gate(hadamard()),
-                "Pauli-X" => circuit.add_gate(pauli_x()),
-                "Pauli-Y" => circuit.add_gate(pauli_y()),
-                "Pauli-Z" => circuit.add_gate(pauli_z()),
-                _ => println!("Unknown command"),
-            }
-        }
-    }
-
-    let final_qubit = Simulator::run(&circuit, [initial_state[0].re, initial_state[1].re]);
+    let final_qubit = Simulator::run(&circuit, &initial_state);
     println!("Final qubit state: {:?}", final_qubit.state);
 
-    // Calculate angles for Bloch sphere representation
-    let (theta, phi) = calculate_angles(final_qubit.state);
-    println!("Theta: {}, Phi: {}", theta, phi);
+    // Display the probabilities of each basis state
+    let probabilities: Vec<f64> = final_qubit.state.iter().map(|amp| amp.norm_sqr()).collect();
+    for (index, prob) in probabilities.iter().enumerate() {
+        println!("|{}>: {:.4}", index, prob);
+    }
 
-    // Calculate Cartesian coordinates for visualization
-    let (x, y, z) = bloch_sphere_coordinates(theta, phi);
-    println!(
-        "Cartesian coordinates on Bloch sphere: (x: {}, y: {}, z: {})",
-        x, y, z
-    );
+    commands.spawn(PbrBundle {
+        mesh: meshes.add(Sphere::new(1.0).mesh()),
+        material: materials.add(StandardMaterial {
+            base_color: Color::srgb(1.0, 1.0, 1.0),
+            ..Default::default()
+        }),
+        ..Default::default()
+    });
+
+    // Calculate and display Bloch sphere coordinates for each qubit
+    for qubit_index in 0..num_qubits {
+        let reduced_state = get_reduced_state(&final_qubit.state, qubit_index, num_qubits);
+        let (theta, phi) = calculate_angles(reduced_state);
+        println!("Qubit {}: Theta: {}, Phi: {}", qubit_index, theta, phi);
+        let (x, y, z) = bloch_sphere_coordinates(theta, phi);
+        println!(
+            "Qubit {}: Cartesian coordinates on Bloch sphere: (x: {}, y: {}, z: {})",
+            qubit_index, x, y, z
+        );
+
+        // Add sphere for each qubit
+        commands
+            .spawn(PbrBundle {
+                mesh: meshes.add(Sphere::new(0.1).mesh()),
+                material: materials.add(StandardMaterial {
+                    base_color: Color::srgb(0.0, 0.0, 0.0),
+                    ..Default::default()
+                }),
+                transform: Transform::from_xyz(x as f32, y as f32, z as f32),
+                ..Default::default()
+            })
+            .insert(QubitSphere)
+            .insert(Position);
+    }
 
     println!("Command: Measure");
     let measurement = final_qubit.measure();
-    println!("Measurement result: |{}⟩", measurement);
+    println!("Measurement result: |{}>", measurement);
+}
+
+fn get_reduced_state(
+    state: &[Complex<f64>],
+    qubit_index: usize,
+    _num_qubits: usize,
+) -> [Complex<f64>; 2] {
+    let mut reduced_state = [Complex::new(0.0, 0.0), Complex::new(0.0, 0.0)];
+    let mask = 1 << qubit_index;
+
+    for (i, amplitude) in state.iter().enumerate() {
+        if (i & mask) == 0 {
+            reduced_state[0] += amplitude;
+        } else {
+            reduced_state[1] += amplitude;
+        }
+    }
+
+    let norm = (reduced_state[0].norm_sqr() + reduced_state[1].norm_sqr()).sqrt();
+    if norm > 0.0 {
+        reduced_state[0] /= norm;
+        reduced_state[1] /= norm;
+    }
+
+    reduced_state
 }
 
 fn calculate_angles(state: [Complex<f64>; 2]) -> (f64, f64) {
     let alpha = state[0];
     let beta = state[1];
 
-    let theta = 2.0 * alpha.norm().acos();
-    let phi = beta.arg() - alpha.arg();
+    let theta = 2.0 * beta.norm().acos();
+    let phi = if alpha.norm() == 0.0 {
+        0.0
+    } else {
+        alpha.arg() - beta.arg()
+    };
 
     (theta, phi)
 }
@@ -82,4 +175,39 @@ fn bloch_sphere_coordinates(theta: f64, phi: f64) -> (f64, f64, f64) {
     let y = theta.sin() * phi.sin();
     let z = theta.cos();
     (x, y, z)
+}
+
+fn gizmo_draw(mut gizmos: Gizmos) {
+    gizmos
+        .grid_3d(
+            Vec3::ZERO,
+            Quat::IDENTITY,
+            UVec3::new(4, 0, 4),
+            Vec3::splat(1.),
+            RED_500,
+        )
+        .outer_edges();
+    gizmos
+        .grid_3d(
+            Vec3::ZERO,
+            Quat::from_axis_angle(Vec3::X, std::f32::consts::PI / 2.0),
+            UVec3::new(4, 0, 4),
+            Vec3::splat(1.),
+            GREEN_500,
+        )
+        .outer_edges();
+
+    gizmos
+        .grid_3d(
+            Vec3::ZERO,
+            Quat::from_axis_angle(Vec3::Z, std::f32::consts::PI / 2.0),
+            UVec3::new(4, 0, 4),
+            Vec3::splat(1.),
+            BLUE_500,
+        )
+        .outer_edges();
+
+    gizmos.arrow(Vec3::ZERO, Vec3::X * 3.0, RED_500);
+    gizmos.arrow(Vec3::ZERO, Vec3::Y * 3.0, GREEN_500);
+    gizmos.arrow(Vec3::ZERO, Vec3::Z * 3.0, BLUE_500);
 }
