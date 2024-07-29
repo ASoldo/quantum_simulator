@@ -1,7 +1,10 @@
+//! This module defines the `Simulator` struct and its associated methods for running quantum circuits on qubits.
+
 use crate::circuit::Circuit;
 use crate::qubit::Qubit;
 use num_complex::Complex;
 
+/// The `Simulator` struct provides functionality to run quantum circuits on qubits.
 pub struct Simulator;
 
 impl Simulator {
@@ -30,7 +33,8 @@ impl Simulator {
     ///
     /// let initial_state = vec![Complex::new(1.0, 0.0), Complex::new(0.0, 0.0)]; // |0⟩ state
     /// let final_qubit = Simulator::run(&circuit, &initial_state);
-    /// println!("Final qubit state: {:?}", final_qubit.state);
+    /// assert_eq!(final_qubit.state.len(), 2);
+    /// assert!(final_qubit.state.iter().all(|&c| c.im == 0.0)); // Check if all imaginary parts are zero
     /// ```
     pub fn run(circuit: &Circuit, initial_state: &[Complex<f64>]) -> Qubit {
         let mut qubit = Qubit::from_state(initial_state.to_vec());
