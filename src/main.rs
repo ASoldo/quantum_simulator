@@ -15,10 +15,11 @@ struct Position(Vec3);
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
-        .add_plugins(PanOrbitCameraPlugin)
-        .add_systems(Startup, setup_camera_and_light)
-        .add_systems(Startup, run_quantum_simulation)
+        .add_plugins((DefaultPlugins, PanOrbitCameraPlugin))
+        .add_systems(
+            Startup,
+            (setup_camera_and_light, run_quantum_simulation).chain(),
+        )
         .add_systems(Update, gizmo_draw)
         .run();
 }
