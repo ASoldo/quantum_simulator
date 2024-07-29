@@ -75,6 +75,14 @@ pub fn phase(theta: f64) -> Gate {
     ])
 }
 
+// S (Phase) gate: Also known as the S-gate, it is a Clifford gate that introduces a phase.
+pub fn s() -> Gate {
+    Gate::new(vec![
+        vec![Complex::new(1.0, 0.0), Complex::new(0.0, 0.0)],
+        vec![Complex::new(0.0, 0.0), Complex::new(0.0, 1.0)],
+    ])
+}
+
 // Example multi-qubit gate: CNOT gate for a 2-qubit system
 pub fn cnot(control: usize, target: usize, num_qubits: usize) -> Gate {
     let size = 2usize.pow(num_qubits as u32);

@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use bevy_panorbit_camera::{PanOrbitCamera, PanOrbitCameraPlugin};
 use num_complex::Complex;
 use quantum_simulator::circuit::Circuit;
-use quantum_simulator::gates::{cnot, hadamard, pauli_x, pauli_y, pauli_z};
+use quantum_simulator::gates::{cnot, hadamard, pauli_x, pauli_y, pauli_z, s};
 use quantum_simulator::simulator::Simulator;
 
 // Components
@@ -74,12 +74,13 @@ fn run_quantum_simulation(
     let mut circuit = Circuit::new();
 
     // Apply different gates to each qubit
-    circuit.add_gate(hadamard(1)); // Apply Hadamard to qubit 0
+    circuit.add_gate(hadamard(num_qubits)); // Apply Hadamard to all qubits
     circuit.add_gate(cnot(0, 1, num_qubits)); // Apply CNOT with control=0, target=1
-    circuit.add_gate(pauli_x()); // Apply Pauli-X gate to qubit 2
+    circuit.add_gate(pauli_x()); // Apply Pauli-X gate to all qubits
     circuit.add_gate(cnot(1, 2, num_qubits)); // Apply CNOT with control=1, target=2
-    circuit.add_gate(pauli_y()); // Apply Pauli-Y gate to qubit 3
+    circuit.add_gate(pauli_y()); // Apply Pauli-Y gate to all qubits
     circuit.add_gate(cnot(2, 3, num_qubits)); // Apply CNOT with control=2, target=3
+    circuit.add_gate(s()); // Apply S gate to all qubits
     circuit.add_gate(pauli_z()); // Apply Pauli-Z gate to all qubits
 
     let final_qubit = Simulator::run(&circuit, &initial_state);
