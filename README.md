@@ -1,3 +1,5 @@
+![image](https://github.com/user-attachments/assets/e3896286-665a-46c6-92d2-ca0195a022b3)
+
 # Quantum Simulator
 
 A Rust-based quantum computing simulator that allows you to model and simulate basic quantum operations on qubits.
