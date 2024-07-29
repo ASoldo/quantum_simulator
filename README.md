@@ -89,12 +89,16 @@ fn run_quantum_simulation(
     // Display probabilities and visualizations
     // ... visualization code ...
 }
-Visualization
+```
+
+## Visualization
+
 The visualization includes:
 
-A central white sphere representing the Bloch sphere.
-Small black spheres representing the qubits.
-Colored arrows indicating the direction from the center to each qubit on the Bloch sphere.
-Contributing
+- A central white sphere representing the `Bloch` sphere.
+- Small black spheres representing the `qubits`.
+- Colored arrows indicating the direction from the center to each `qubit` on the `Bloch sphere`.
+
+## Contributing
+
 Contributions are welcome! Feel free to open issues or submit pull requests.
-```
